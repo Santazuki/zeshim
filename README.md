@@ -1,4 +1,8 @@
 <h1 align="center">@unblind/provider-kit</h1>
+<p align="center"><em>协议驱动的 LLM Provider 抽象。零依赖。</em></p>
+<p align="center">
+  <a href="#english">English</a> | 中文
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/npm/v/@unblind/provider-kit?color=blue" alt="npm">
@@ -6,19 +10,14 @@
   <img src="https://img.shields.io/badge/dependencies-0-zero?labelColor=white" alt="zero deps">
   <img src="https://img.shields.io/badge/TypeScript-5.x-blue" alt="TypeScript">
 </p>
-<p align="center">
-  <em>协议驱动的 LLM Provider 抽象。零依赖。</em>
-</p>
 
 ---
 
-[English](#english) | 中文
-
 ## 这是什么
 
-`@unblind/provider-kit` 把 LLM Vision API 的调用抽象成两层：**协议**（怎么说话）和**Provider**（跟谁说话）。从 [unblind](https://github.com/Santazuki/unblind) 的工程实践中提取，经过 7 个 Provider、3 个协议族的生产验证。
+把 LLM Vision API 的调用抽象成两层：**协议**（怎么说话）和 **Provider**（跟谁说话）。从 [unblind](https://github.com/Santazuki/unblind) 的工程实践中提取，经过 7 个 Provider、3 个协议族的生产验证。
 
-大多数项目解决多 Provider 问题的方式是每个 Provider 写一个适配器类——Provider 数量 × API 版本 = 爆炸的组合。provider-kit 把协议定义一次，同一协议族的 Provider 只需一行配置。
+大多数项目解决多 Provider 的方式是每个 Provider 写一个适配器类——Provider 数量 × API 版本 = 爆炸的组合。provider-kit 把协议定义一次，同一协议族的 Provider 只需一行配置。
 
 ```
 Protocol (怎么调用 API 族)  ←  同一协议共享
@@ -51,7 +50,7 @@ const result = await provider.execute({
   prompt: "这张图里有什么？",
 });
 
-console.log(result.content);      // → "一只猫坐在窗台上..."
+console.log(result.content);           // → "一只猫坐在窗台上..."
 console.log(result.processingTimeMs);  // → 1234
 ```
 
@@ -89,93 +88,36 @@ for (const { provider } of chain) {
 
 ### overrides 机制
 
-同一协议族内不同 Provider 的微小差异（如 Groq 的 max_tokens 上限不同）通过 `overrides` 声明，不污染协议定义：
-
-```typescript
-{
-  name: "groq",
-  protocol: "openai-chat-completions",
-  overrides: {
-    buildBody(proto, model, content, opts) {
-      const body = proto.buildBody(model, content, opts);
-      body.max_tokens = Math.min(body.max_tokens, 4096);
-      return body;
-    },
-  },
-}
-```
-
-仅允许覆盖 `buildBody` 和 `parseError`。
+同一协议族内不同 Provider 的微小差异通过 `overrides` 声明，不污染协议定义。仅允许覆盖 `buildBody` 和 `parseError`。
 
 ### 错误归一化
 
-不管调用 Anthropic、OpenAI 还是 Google 的 API，错误都会被归一化为四类：
-
-```
-auth → ClientError（不重试）
-rate_limit → ServerError（重试）
-server → ServerError（重试）
-client → ClientError（不重试）
-```
+不管调用哪个 API，错误统一为四类：`auth` → `rate_limit` → `server` → `client`
 
 ## API
 
-### `GenericProvider`
+`GenericProvider` — 唯一类，零子类。调度协议函数完成请求。
 
-```typescript
-new GenericProvider({
-  name: string;          // Provider 标识
-  protocol: Protocol;    // 协议对象，从 PROTOCOLS 取
-  baseUrl: string;       // API 基地址
-  apiKey: string;        // API Key
-  model: string;         // 模型名
-  timeoutMs?: number;    // 超时，默认 30000
-  overrides?: {          // 方法覆盖（仅 buildBody / parseError）
-    buildBody?: (proto, model, content, opts) => object;
-    parseError?: (proto, data, status) => { category, message? };
-  };
-})
-
-provider.execute({ inputs, prompt, options? }): Promise<AnalyzeResult>
-provider.healthCheck(): Promise<boolean>
-```
-
-### `loadProviders`
-
-```typescript
-loadProviders(order: string, opts?: {
-  model?: string;
-  timeoutMs?: number;
-  baseUrls?: Record<string, string>;
-}): Array<{ provider: GenericProvider; name: string }>
-```
-
-从 `REGISTRY` 中读取已配置的 Provider（通过环境变量启用），按 `order` 指定的顺序返回。
+`loadProviders(order, opts?)` — 从 `REGISTRY` 读取已配置的 Provider，按 `order` 顺序返回。
 
 ## 工程
 
 - **零依赖**：纯 TypeScript，Node.js >= 18 内置模块
-- **300 LOC**：5 个文件，每个职责单一
+- **~300 LOC**：5 个文件，每个职责单一
 - **协议纯函数**：`buildContent`、`extractContent` 等零副作用，可直接单测
 - **生产验证**：在 unblind 中跑过 7 个 Provider、171 个测试
 
-## License
-
-MIT
-
 ---
+
+<span id="english"></span>
 
 ## English
 
 `@unblind/provider-kit` separates **protocol** (how to call an API family) from **provider** (which endpoint + key). Extracted from [unblind](https://github.com/Santazuki/unblind), battle-tested across 7 providers and 3 protocol families.
 
-### Install
-
 ```bash
 npm install @unblind/provider-kit
 ```
-
-### Quick Start
 
 ```typescript
 import { GenericProvider, PROTOCOLS } from "@unblind/provider-kit";
@@ -194,13 +136,7 @@ const result = await provider.execute({
 });
 ```
 
-### Key Concepts
-
-- **3 built-in protocols**: Anthropic Messages, OpenAI Chat Completions, Google Generative AI
-- **GenericProvider**: Single class, zero subclasses. Dispatches protocol functions.
-- **Overrides**: Handle per-provider quirks (Groq's max_tokens cap) without polluting protocol definitions
-- **Error normalization**: All provider errors → `auth | rate_limit | server | client`
-- **Zero dependencies**: TypeScript, Node.js >= 18 built-in modules, ~300 LOC
+**Key Concepts**: 3 built-in protocols · GenericProvider (single class, zero subclasses) · Overrides for per-provider quirks · Error normalization (auth|rate_limit|server|client) · Zero dependencies, ~300 LOC.
 
 ### License
 
