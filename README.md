@@ -1,11 +1,11 @@
+<h1 align="center">@unblind/provider-kit</h1>
+
 <p align="center">
   <img src="https://img.shields.io/npm/v/@unblind/provider-kit?color=blue" alt="npm">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
   <img src="https://img.shields.io/badge/dependencies-0-zero?labelColor=white" alt="zero deps">
   <img src="https://img.shields.io/badge/TypeScript-5.x-blue" alt="TypeScript">
 </p>
-
-<h1 align="center">@unblind/provider-kit</h1>
 <p align="center">
   <em>协议驱动的 LLM Provider 抽象。零依赖。</em>
 </p>
