@@ -138,6 +138,24 @@ const result = await provider.execute({
 
 **Key Concepts**: 3 built-in protocols · GenericProvider (single class, zero subclasses) · Overrides for per-provider quirks · Error normalization (auth|rate_limit|server|client) · Zero dependencies, ~300 LOC.
 
+## 参与贡献
+
+欢迎提 Issue 和 PR。
+
+### 开发环境
+
+```bash
+git clone https://github.com/Santazuki/provider-kit.git
+npm install       # 仅 TypeScript 编译器
+npm run build     # 编译到 dist/
+```
+
+### 运行测试
+
+```bash
+npm test
+```
+
 ### License
 
 MIT
