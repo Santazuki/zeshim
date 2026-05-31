@@ -157,7 +157,7 @@ export function loadProviders(
 
   if (debug && errors.length > 0) {
     for (const e of errors) {
-      process.stderr.write(`[provider-kit] SKIP ${e.name}: ${e.reason}\n`);
+      process.stderr.write(`[zeshi] SKIP ${e.name}: ${e.reason}\n`);
     }
   }
 

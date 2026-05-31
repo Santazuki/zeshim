@@ -1,5 +1,5 @@
 {
-  "name": "@unblind/provider-kit",
+  "name": "@unblind/zeshi",
   "version": "0.1.0",
   "description": "Protocol-driven LLM provider abstraction — zero dependencies, circuit-breaker ready, error normalization built-in",
   "type": "module",
