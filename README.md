@@ -1,5 +1,5 @@
 <h1 align="center">Zeshi</h1>
-<p align="center"><em>协议驱动的 LLM Provider 抽象。零依赖。</em></p>
+<p align="center"><em>Zero-dependency, API Shim, Harmonized. 协议驱动 + 零依赖的 LLM Provider 垫片层</em></p>
 <p align="center">
   <a href="#english">English</a> | 中文
 </p>
