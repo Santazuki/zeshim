@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/npm/v/@unblind/zeshi?color=blue" alt="npm">
+  <img src="https://img.shields.io/npm/v/zeshi?color=blue" alt="npm">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
   <img src="https://img.shields.io/badge/dependencies-0-zero?labelColor=white" alt="zero deps">
   <img src="https://img.shields.io/badge/TypeScript-5.x-blue" alt="TypeScript">
@@ -15,7 +15,7 @@
 
 ## 这是什么
 
-把 LLM Vision API 的调用抽象成两层：**协议**（怎么说话）和 **Provider**（跟谁说话）。从 [unblind](https://github.com/Santazuki/unblind) 的工程实践中提取，经过 7 个 Provider、3 个协议族的生产验证。
+把 LLM Vision API 的调用抽象成两层：**协议**（怎么说话）和 **Provider**（跟谁说话）。启发自 [unblind](https://github.com/Santazuki/unblind) 的 Provider 层设计，经过 7 个 Provider、3 个协议族的生产验证。
 
 大多数项目解决多 Provider 的方式是每个 Provider 写一个适配器类——Provider 数量 × API 版本 = 爆炸的组合。zeshi 把协议定义一次，同一协议族的 Provider 只需一行配置。
 
@@ -27,13 +27,13 @@ Provider (哪个端点 + 哪个 Key)  ←  一行声明
 ## 安装
 
 ```bash
-npm install @unblind/zeshi
+npm install zeshi
 ```
 
 ## 快速开始
 
 ```typescript
-import { GenericProvider, PROTOCOLS } from "@unblind/zeshi";
+import { GenericProvider, PROTOCOLS } from "zeshi";
 
 const provider = new GenericProvider({
   name: "openai",
@@ -69,7 +69,7 @@ console.log(result.processingTimeMs);  // → 1234
 ### 多 Provider 链式调用
 
 ```typescript
-import { loadProviders } from "@unblind/zeshi";
+import { loadProviders } from "zeshi";
 
 const chain = loadProviders("mimo,openai,groq", {
   model: "gpt-4o",
@@ -113,14 +113,14 @@ for (const { provider } of chain) {
 
 ## English
 
-`@unblind/zeshi` separates **protocol** (how to call an API family) from **provider** (which endpoint + key). Extracted from [unblind](https://github.com/Santazuki/unblind), battle-tested across 7 providers and 3 protocol families.
+`zeshi` separates **protocol** (how to call an API family) from **provider** (which endpoint + key). Inspired by the provider layer design of [unblind](https://github.com/Santazuki/unblind), battle-tested across 7 providers and 3 protocol families.
 
 ```bash
-npm install @unblind/zeshi
+npm install zeshi
 ```
 
 ```typescript
-import { GenericProvider, PROTOCOLS } from "@unblind/zeshi";
+import { GenericProvider, PROTOCOLS } from "zeshi";
 
 const provider = new GenericProvider({
   name: "openai",
