@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Claude Code (project-specific AI assistant configuration)
+CLAUDE.md
+.claude/
+
+# Cursor
+.cursor/
+.cursorrules
+
+# Copilot
+.github/copilot-instructions.md

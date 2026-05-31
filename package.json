@@ -1,5 +1,5 @@
 {
-  "name": "zeshi",
+  "name": "zeshim",
   "version": "0.1.0",
   "description": "Protocol-driven LLM provider abstraction — zero dependencies, circuit-breaker ready, error normalization built-in. 协议驱动 + 零依赖的 LLM Provider 垫片层",
   "type": "module",
@@ -16,7 +16,9 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsc",
@@ -24,13 +26,24 @@
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "llm", "provider", "anthropic", "openai", "gemini",
-    "agent", "skill", "claude-code", "protocol",
-    "zero-dependency", "typescript"
+    "llm",
+    "provider",
+    "anthropic",
+    "openai",
+    "gemini",
+    "agent",
+    "skill",
+    "claude-code",
+    "protocol",
+    "zero-dependency",
+    "typescript"
   ],
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^25.9.1",
     "typescript": "^5.5.0"
   }
 }
