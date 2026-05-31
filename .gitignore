@@ -16,6 +16,9 @@ Thumbs.db
 CLAUDE.md
 .claude/
 
+# Design docs (local reference, not shipped)
+docs/design/
+
 # Cursor
 .cursor/
 .cursorrules
