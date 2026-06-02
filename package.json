@@ -32,8 +32,7 @@
     "openai",
     "gemini",
     "agent",
-    "skill",
-    "claude-code",
+    "architecture",
     "protocol",
     "zero-dependency",
     "typescript"
