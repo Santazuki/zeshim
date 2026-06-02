@@ -1,5 +1,5 @@
 <h1 align="center">Zeshim</h1>
-<p align="center"><em>Zero-dependency, API Shim, Harmonized — 协议驱动 + 零依赖的 LLM Provider 垫片层</em></p>
+<p align="center"><em>复杂度从 N×M 降到 N+M —— 协议驱动 + 零依赖的 LLM Provider 基座</em></p>
 <p align="center">
   <a href="#english">English</a> | 中文
 </p>
@@ -15,14 +15,17 @@
 
 ## 这是什么
 
-把 LLM Vision API 的调用抽象成两层：**协议**（怎么说话）和 **Provider**（跟谁说话）。启发自 [unblind](https://github.com/Santazuki/unblind) 的 Provider 层设计，经过 7 个 Provider、3 个协议族的生产验证。
+LLM API 只有 3 种协议，但走同一种协议的服务商可以有无数个。把 **协议**（怎么发请求）和 **Provider**（连到哪）拆开——复杂度从 N×M 子类爆炸变成 N 行数据 + M 个协议对象。
 
-大多数项目解决多 Provider 的方式是每个 Provider 写一个适配器类——Provider 数量 × API 版本 = 爆炸的组合。zeshim 把协议定义一次，同一协议族的 Provider 只需一行配置。
+启发自 [unblind](https://github.com/Santazuki/unblind) 的 Provider 层设计，经过 7 个 Provider、3 个协议族的生产验证。
 
 ```
-Protocol (怎么调用 API 族)  ←  同一协议共享
-Provider (哪个端点 + 哪个 Key)  ←  一行声明
+协议（纯函数，写一次）  ←  3 个对象，各自独立演化
+Provider（纯数据，一行一个）  ←  厂商 + 协议 = 一条注册表条目
+模型（字段值，不占条目）  ←  环境变量切换，不碰注册表
 ```
+
+**换模型不改代码。加厂商不加协议。加协议不改注册表。** 三个维度独立。
 
 ## 安装
 
@@ -56,17 +59,19 @@ console.log(result.processingTimeMs);  // → 1234
 
 ## 核心概念
 
-### 三种内置协议
+### N×M → N+M
 
-| 协议 | 标识符 | 适用 API |
-|------|--------|------|
-| Anthropic Messages | `anthropic-messages` | Mimo |
-| OpenAI Chat Completions | `openai-chat-completions` | OpenAI, Groq, Together, Fireworks, Ollama |
-| Google Generative AI | `google-generative-ai` | Gemini |
+子类方案：每个 Provider 一个类，每家厂商 × 每个协议 = 一个子类。7 个 Provider 三个协议族 = 7 个子类 + build 函数。
 
-每个协议封装了 6 个纯函数：`endpoint`、`auth`、`buildContent`、`buildBody`、`extractContent`、`parseError`。
+协议方案：协议是纯函数对象（M 个），Provider 是注册表数据（N 行）。同一厂商双协议接入？加一行，不写代码。
 
-### 多 Provider 链式调用
+| | 子类方案 | 协议方案 |
+|------|:---:|:---:|
+| 同协议加厂商 | 写 build 函数 | 加一行数据 |
+| 同厂商加协议 | 写新子类 | 加一行数据 |
+| 换模型 | 改字段 ✅ | 改字段 ✅ |
+| 协议逻辑单测 | ❌ 需 Key | ✅ 纯函数 |
+
 
 ```typescript
 import { loadProviders } from "zeshim";
@@ -113,7 +118,9 @@ for (const { provider } of chain) {
 
 ## English
 
-`zeshim` separates **protocol** (how to call an API family) from **provider** (which endpoint + key). Inspired by the provider layer design of [unblind](https://github.com/Santazuki/unblind), battle-tested across 7 providers and 3 protocol families.
+`zeshim` separates **protocol** (how to call an API family) from **provider** (which endpoint + key). Complexity drops from N×M to N+M — 3 protocol objects + N registry rows = all providers. Switch models by changing a field, add providers by adding a row, add protocols by adding an object. All three dimensions independent.
+
+Inspired by the provider layer design of [unblind](https://github.com/Santazuki/unblind), battle-tested across 7 providers and 3 protocol families.
 
 ```bash
 npm install zeshim
@@ -136,7 +143,7 @@ const result = await provider.execute({
 });
 ```
 
-**Key Concepts**: 3 built-in protocols · GenericProvider (single class, zero subclasses) · Overrides for per-provider quirks · Error normalization (auth|rate_limit|server|client) · Zero dependencies, ~300 LOC.
+**Key Concepts**: N+M architecture · 3 built-in protocols · GenericProvider (single class, zero subclasses) · Overrides for per-provider quirks · Error normalization (auth|rate_limit|server|client) · Zero dependencies, ~300 LOC.
 
 ## 参与贡献
 
