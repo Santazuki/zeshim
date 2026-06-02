@@ -43,7 +43,15 @@ export interface Protocol {
   readonly buildBody: (model: string, content: unknown, opts: ExecuteOptions) => unknown;
   readonly extractContent: (data: Record<string, unknown>) => string;
   readonly parseError: (data: Record<string, unknown>, status: number) => ParsedError;
+  /** Optional streaming — if not implemented, sendStream() auto-falls back to execute() */
+  readonly stream?: (model: string, content: unknown, opts: ExecuteOptions, signal?: AbortSignal) => AsyncIterable<StreamChunk>;
 }
+
+// ── Streaming ──
+
+export type StreamChunk =
+  | { readonly type: "text"; readonly content: string }
+  | { readonly type: "done"; readonly usage?: unknown };
 
 // ── Error types ──
 
@@ -129,6 +137,7 @@ export interface LoadedProvider {
 export interface GenericProviderLike {
   readonly name: string;
   execute(params: { inputs: Input[]; prompt: string; options?: ExecuteOptions }): Promise<ExecuteResult>;
+  sendStream(params: { inputs: Input[]; prompt: string; options?: ExecuteOptions; signal?: AbortSignal }): AsyncIterable<StreamChunk>;
   healthCheck(): Promise<boolean>;
 }
 

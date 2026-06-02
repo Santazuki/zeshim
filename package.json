@@ -1,6 +1,6 @@
 {
   "name": "zeshim",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Protocol-driven LLM provider abstraction — zero dependencies, circuit-breaker ready, error normalization built-in. 协议驱动 + 零依赖的 LLM Provider 垫片层",
   "type": "module",
   "main": "./dist/index.js",
@@ -23,7 +23,9 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "llm",
@@ -43,6 +45,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^25.9.1",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "vitest": "^4.1.8"
   }
 }
