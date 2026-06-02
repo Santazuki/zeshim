@@ -118,13 +118,29 @@ for (const { provider } of chain) {
 
 ## English
 
-`zeshim` separates **protocol** (how to call an API family) from **provider** (which endpoint + key). Complexity drops from N×M to N+M — 3 protocol objects + N registry rows = all providers. Switch models by changing a field, add providers by adding a row, add protocols by adding an object. All three dimensions independent.
+There are only 3 LLM API protocols, but unlimited providers running the same protocol. `zeshim` separates **protocol** (how to call an API family) from **provider** (which endpoint + key). Complexity drops from N×M subclass explosion to N data rows + M protocol objects.
 
 Inspired by the provider layer design of [unblind](https://github.com/Santazuki/unblind), battle-tested across 7 providers and 3 protocol families.
 
 ```bash
 npm install zeshim
 ```
+
+### Why N+M
+
+The subclass approach: every vendor × every protocol = one subclass. 7 providers across 3 protocols = 7 subclasses + build functions.
+
+The protocol approach: protocols are pure function objects (M), providers are registry rows (N). Same vendor via two protocols? Add a row, not a class. Three independent dimensions — switching models, adding providers, adding protocols — each done without touching the other two.
+
+| | Subclass | Protocol |
+|------|:---:|:---:|
+| Add same-protocol vendor | Write build function | Add 1 data row |
+| Add new protocol family | Write Provider class | Add 1 protocol object |
+| Same vendor, dual protocol | New subclass | Add 1 data row |
+| Switch models | Change field ✅ | Change field ✅ |
+| Unit-test protocol logic | ❌ Needs API key | ✅ Pure functions |
+
+### Quick Start
 
 ```typescript
 import { GenericProvider, PROTOCOLS } from "zeshim";
@@ -141,9 +157,29 @@ const result = await provider.execute({
   inputs: [{ type: "image", data: "data:image/png;base64,...", mimeType: "image/png" }],
   prompt: "What's in this image?",
 });
+// → "A cat sitting on a windowsill..."  (1234ms)
 ```
 
-**Key Concepts**: N+M architecture · 3 built-in protocols · GenericProvider (single class, zero subclasses) · Overrides for per-provider quirks · Error normalization (auth|rate_limit|server|client) · Zero dependencies, ~300 LOC.
+### Multi-Provider Chain
+
+```typescript
+import { loadProviders } from "zeshim";
+
+const chain = loadProviders("mimo,openai,groq", { timeoutMs: 15_000 });
+for (const { provider } of chain) {
+  try { return await provider.execute({ inputs, prompt }); }
+  catch (err) {
+    if (err.category === "auth") throw err;  // don't retry
+    continue;  // fall through to next provider
+  }
+}
+```
+
+- **3 protocols**: Anthropic Messages, OpenAI Chat Completions, Google Generative AI
+- **GenericProvider**: Single class, zero subclasses. Dispatches protocol functions
+- **Overrides**: Per-provider quirks (e.g. Groq's max_tokens cap) as data, not subclass logic
+- **Error normalization**: All errors → `auth | rate_limit | server | client` — circuit breaker reads only the category
+- **Zero dependencies**: Pure TypeScript, Node.js >= 18 built-in modules, ~300 LOC
 
 ## 参与贡献
 
