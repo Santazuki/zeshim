@@ -112,8 +112,6 @@ for (const { provider } of chain) {
 - **协议纯函数**：`buildContent`、`extractContent` 等零副作用，可直接单测
 - **生产验证**：在 unblind 中跑过 7 个 Provider、171 个测试
 
-📖 [复杂度从 N×M 降到 N+M（掘金）](https://juejin.cn/post/7584227943874830370) · [From N×M to N+M: A Zero-Dependency LLM Provider Layer (dev.to)](https://dev.to/santazuki/from-nxm-to-nm-a-zero-dependency-llm-provider-layer-37j3)
-
 ---
 
 <span id="english"></span>
