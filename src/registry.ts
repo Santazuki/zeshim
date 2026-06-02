@@ -104,13 +104,16 @@ export function loadProviders(
   }
 
   const { model, timeoutMs, baseUrls = {}, debug } = opts;
+  const requested = new Set(order.split(",").map((s) => s.trim()));
   const available = new Map<string, LoadedProvider>();
   const errors: Array<{ name: string; reason: string }> = [];
 
   for (const entry of REGISTRY) {
+    if (!requested.has(entry.name)) continue;
     // Lazy env read — 不在模块顶层取值
-    const envBaseUrl = env[entry.name.toUpperCase() + "_BASE_URL"];
-    const envModel = env[entry.name.toUpperCase() + "_MODEL"];
+    const nameUpper = entry.name.toUpperCase();
+    const envBaseUrl = env[nameUpper + "_BASE_URL"];
+    const envModel = env[nameUpper + "_MODEL"];
 
     const apiKey = entry.authRequired === false
       ? "no-auth"

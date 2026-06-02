@@ -6,4 +6,5 @@ export type {
   ExecuteOptions, ParsedError, ProviderEntry, ProviderLimits,
   ProtocolOverrides, ProviderCapabilities, ExecuteResult, ProviderConfig,
   LoadProvidersOptions, LoadedProvider, GenericProviderLike, ApiRequestFn,
+  StreamChunk,
 } from "./types.js";

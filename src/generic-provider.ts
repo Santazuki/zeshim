@@ -1,4 +1,4 @@
-import type { ProviderConfig, ProtocolOverrides, Input, ExecuteOptions, ExecuteResult, ApiRequestFn, ParsedError } from "./types.js";
+import type { ProviderConfig, ProtocolOverrides, Input, ExecuteOptions, ExecuteResult, ApiRequestFn, ParsedError, StreamChunk } from "./types.js";
 
 /** Provider 级错误，带 category 便于上游做重试/熔断判断 */
 export class ProviderError extends Error {
@@ -41,7 +41,7 @@ export class GenericProvider {
     this._apiRequest = apiRequest || defaultApiRequest;
   }
 
-  // ── Typed private helpers (P0: 替代 unsafe _call) ──
+  // ── Override-aware protocol dispatch helpers ──
 
   private _auth(apiKey: string): Record<string, string> {
     const override = this._overrides.auth;
@@ -59,6 +59,12 @@ export class GenericProvider {
     const override = this._overrides.buildBody;
     if (override) return override(this._proto, model, content, opts);
     return this._proto.buildBody(model, content, opts);
+  }
+
+  private _extractContent(data: Record<string, unknown>): string {
+    const override = this._overrides.extractContent;
+    if (override) return override(this._proto, data);
+    return this._proto.extractContent(data);
   }
 
   private _parseError(data: Record<string, unknown>, status: number): ParsedError {
@@ -93,7 +99,7 @@ export class GenericProvider {
     });
 
     const data = await res.json() as Record<string, unknown>;
-    const text = this._proto.extractContent(data);
+    const text = this._extractContent(data);
 
     return {
       content: text,
@@ -101,6 +107,24 @@ export class GenericProvider {
       processingTimeMs: Date.now() - startTime,
       provider: this.name,
     };
+  }
+
+  /** 流式调用——Protocol 有原生 stream 则代理，无则自动回退到 execute() 后一次性 emit */
+  async *sendStream({ inputs, prompt, options = {}, signal }: {
+    inputs: Input[];
+    prompt: string;
+    options?: ExecuteOptions;
+    signal?: AbortSignal;
+  }): AsyncIterable<StreamChunk> {
+    if (this._proto.stream) {
+      const content = this._buildContent(inputs, prompt);
+      yield* this._proto.stream(this._model, content, options, signal);
+    } else {
+      // Auto-fallback: accumulate via execute()
+      const result = await this.execute({ inputs, prompt, options });
+      yield { type: "text", content: result.content };
+      yield { type: "done" };
+    }
   }
 
   async healthCheck(): Promise<boolean> {

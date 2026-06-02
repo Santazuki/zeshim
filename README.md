@@ -94,7 +94,7 @@ for (const { provider } of chain) {
 
 ### overrides 机制
 
-同一协议族内不同 Provider 的微小差异通过 `overrides` 声明，不污染协议定义。仅允许覆盖 `buildBody` 和 `parseError`。
+同一协议族内不同 Provider 的微小差异通过 `overrides` 声明，不污染协议定义。允许覆盖全部 5 个 Protocol 函数：`auth`, `buildContent`, `buildBody`, `extractContent`, `parseError`。
 
 ### 错误归一化
 
@@ -102,14 +102,25 @@ for (const { provider } of chain) {
 
 ## API
 
-`GenericProvider` — 唯一类，零子类。调度协议函数完成请求。
+`GenericProvider` — 唯一类，零子类。`execute()` 一次性调用，`sendStream()` 流式调用（自动回退）。
 
 `loadProviders(order, opts?)` — 从 `REGISTRY` 读取已配置的 Provider，按 `order` 顺序返回。
+
+`sendStream({ inputs, prompt, options?, signal? })` — 返回 `AsyncIterable<StreamChunk>`。如果 Protocol 未实现原生流式，自动回退到 `execute()` 后一次性 emit。
+
+### 流式调用
+
+```typescript
+for await (const chunk of provider.sendStream({ inputs, prompt })) {
+  if (chunk.type === "text") process.stdout.write(chunk.content);
+  if (chunk.type === "done") console.log("\\n--- done ---");
+}
+```
 
 ## 工程
 
 - **零依赖**：纯 TypeScript，Node.js >= 18 内置模块
-- **~300 LOC**：5 个文件，每个职责单一
+- **480 LOC**：5 个文件，每个职责单一
 - **协议纯函数**：`buildContent`、`extractContent` 等零副作用，可直接单测
 - **生产验证**：在 unblind 中跑过 7 个 Provider、171 个测试
 
@@ -146,7 +157,7 @@ const result = await provider.execute({
 });
 ```
 
-**Key Concepts**: N+M architecture · 3 built-in protocols · GenericProvider (single class, zero subclasses) · Overrides for per-provider quirks · Error normalization (auth|rate_limit|server|client) · Zero dependencies, ~300 LOC.
+**Key Concepts**: N+M architecture · 3 built-in protocols · GenericProvider (single class, zero subclasses) · Overrides for per-provider quirks · Error normalization (auth|rate_limit|server|client) · Zero dependencies, 480 LOC.
 
 ## 参与贡献
 

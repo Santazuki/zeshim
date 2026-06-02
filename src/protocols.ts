@@ -7,12 +7,20 @@ function b64raw(data: string): string {
 
 function uerror(data: Record<string, unknown>): { type?: string; message?: string } {
   const raw = data.error && typeof data.error === "object" ? data.error : data;
-  return raw as { type?: string; message?: string };
+  return raw;
 }
 
-function ensureArray(v: unknown, label: string): unknown[] {
+function ensureArray<T = unknown>(v: unknown, label: string): T[] {
   if (!Array.isArray(v)) throw new Error(`${label}: expected array`);
-  return v;
+  return v as T[];
+}
+
+function defaultParseError(data: Record<string, unknown>, status: number): ParsedError {
+  const err = uerror(data);
+  if (status === 401 || status === 403) return { category: "auth" };
+  if (status === 429) return { category: "rate_limit" };
+  if (status >= 500) return { category: "server", message: err.message || "Server error" };
+  return { category: "client", message: err.message || "Client error" };
 }
 
 export const PROTOCOLS: Record<string, Protocol> = {
@@ -56,19 +64,15 @@ export const PROTOCOLS: Record<string, Protocol> = {
     },
 
     extractContent(data) {
-      const arr = ensureArray(data.content, "Anthropic");
-      const text = (arr as Array<{ type: string; text?: string }>).find((c) => c.type === "text")?.text;
+      const arr = ensureArray<{ type: string; text?: string }>(data.content, "Anthropic");
+      const text = arr.find((c) => c.type === "text")?.text;
       if (!text) throw new Error("No text content in Anthropic response");
       return text;
     },
 
-    parseError(data, status): ParsedError {
-      const err = uerror(data);
-      if (status === 401 || status === 403) return { category: "auth" };
-      if (status === 429) return { category: "rate_limit" };
-      if (status >= 500) return { category: "server", message: err.message || "Server error" };
-      return { category: "client", message: err.message || "Client error" };
-    },
+    parseError: defaultParseError,
+
+    // stream?: undefined — triggers auto-fallback in sendStream()
   },
 
   // ── OpenAI Chat Completions API ──
@@ -108,20 +112,16 @@ export const PROTOCOLS: Record<string, Protocol> = {
     },
 
     extractContent(data) {
-      const choices = ensureArray(data.choices, "OpenAI") as Array<{ message?: { content?: string } }>;
+      const choices = ensureArray<{ message?: { content?: string } }>(data.choices, "OpenAI");
       if (choices.length === 0) throw new Error("OpenAI: no choices in response");
       const text = choices[0]?.message?.content;
       if (!text) throw new Error("No text content in OpenAI response");
       return text;
     },
 
-    parseError(data, status): ParsedError {
-      const err = uerror(data);
-      if (status === 401 || status === 403) return { category: "auth" };
-      if (status === 429) return { category: "rate_limit" };
-      if (status >= 500) return { category: "server", message: err.message || "Server error" };
-      return { category: "client", message: err.message || "Client error" };
-    },
+    parseError: defaultParseError,
+
+    // stream?: undefined — triggers auto-fallback in sendStream()
   },
 
   // ── Google Generative AI API ──
@@ -165,9 +165,9 @@ export const PROTOCOLS: Record<string, Protocol> = {
     },
 
     extractContent(data) {
-      const candidates = ensureArray(data.candidates, "Gemini") as Array<{
+      const candidates = ensureArray<{
         content?: { parts?: Array<{ text?: string }> };
-      }>;
+      }>(data.candidates, "Gemini");
       if (candidates.length === 0) throw new Error("Gemini: no candidates in response");
       const text = candidates[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error("No text content in Gemini response");
@@ -181,5 +181,7 @@ export const PROTOCOLS: Record<string, Protocol> = {
       if (status >= 500 || err.status === "UNAVAILABLE") return { category: "server", message: err.message || "Server error" };
       return { category: "client", message: err.message || "Client error" };
     },
+
+    // stream?: undefined — triggers auto-fallback in sendStream()
   },
 };
