@@ -1,5 +1,6 @@
 <h1 align="center">Zeshim</h1>
 <p align="center"><em>复杂度从 N×M 降到 N+M —— 协议驱动 + 零依赖的 LLM Provider 基座</em></p>
+<p align="center"><em>From N×M to N+M — Protocol-driven, zero-dependency LLM provider shim</em></p>
 <p align="center">
   <a href="#english">English</a> | 中文
 </p>
@@ -111,6 +112,8 @@ for (const { provider } of chain) {
 - **~300 LOC**：5 个文件，每个职责单一
 - **协议纯函数**：`buildContent`、`extractContent` 等零副作用，可直接单测
 - **生产验证**：在 unblind 中跑过 7 个 Provider、171 个测试
+
+📖 [复杂度从 N×M 降到 N+M（掘金）](https://juejin.cn/post/7584227943874830370) · [From N×M to N+M (dev.to)](https://dev.to/santazuki/from-nxm-to-nm-a-zero-dependency-llm-provider-layer-37j3)
 
 ---
 
